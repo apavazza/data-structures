@@ -4,26 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_BR_BODOVA 30
+#define MAX_POINTS 30
 #define MAX_STR_LEN 128
 #define FAILED_TO_OPEN (-1)
 
+typedef struct _student Student;
+int numOfStudents(char filename[MAX_STR_LEN]);
+Student* loadStudents(char filename[MAX_STR_LEN], int n);
+float relPoints(float absPoints);
+void printStudents(int n, Student* studentArray);
 
-typedef struct
+typedef struct _student
 {
-    char ime[MAX_STR_LEN];
-    char prezime[MAX_STR_LEN];
-    float bodovi;
+    char firstName[MAX_STR_LEN];
+    char lastName[MAX_STR_LEN];
+    float points;
 } Student;
 
-int numOfStudents(char fileName[MAX_STR_LEN])
+int numOfStudents(char filename[MAX_STR_LEN])
 {
     // otvaranje datoteke
     FILE* f = NULL;
-    f = fopen(fileName, "r");
+    f = fopen(filename, "r");
     if (!f)
     {
-        printf("Datoteku nije moguce otvoriti\n");
+        printf("File %s could not be opened\n", filename);
         return FAILED_TO_OPEN;
     }
 
@@ -44,20 +49,23 @@ int numOfStudents(char fileName[MAX_STR_LEN])
     return n;
 }
 
-Student* loadStudents(char fileName[MAX_STR_LEN], int n, Student* studentArray)
+Student* loadStudents(char filename[MAX_STR_LEN], int n)
 {
     // otvaranje datoteke
     FILE* f = NULL;
-    f = fopen(fileName, "r");
+    f = fopen(filename, "r");
     if (!f)
     {
-        printf("Datoteku nije moguce otvoriti\n");
+        printf("File %s could not be opened\n", filename);
         return NULL;
     }
 
+    // alociranje prostora
+    Student* studentArray = (Student*)malloc(n * sizeof(Student));
+
     for (size_t i = 0; i < n; i++)
     {
-        fscanf(f, "%s %s %f", studentArray[i].ime, studentArray[i].prezime, &studentArray[i].bodovi);
+        fscanf(f, "%s %s %f", studentArray[i].firstName, studentArray[i].lastName, &studentArray[i].points);
     }
 
     // zatvaranje datoteke
@@ -66,38 +74,38 @@ Student* loadStudents(char fileName[MAX_STR_LEN], int n, Student* studentArray)
     return studentArray;
 }
 
-float relBodovi(float apsBodovi)
+float relPoints(float absPoints)
 {
-    return apsBodovi / MAX_BR_BODOVA * 100;
+    return absPoints / MAX_POINTS * 100;
 }
 
 void printStudents(int n, Student* studentArray)
 {
     for (size_t i = 0; i < n; i++)
     {
-        printf("%s %s %.1f %.2f\n", studentArray[i].ime, studentArray[i].prezime, studentArray[i].bodovi, relBodovi(studentArray[i].bodovi));
+        printf("%s %s %.1f %.2f\n", studentArray[i].firstName, studentArray[i].lastName, studentArray[i].points, relPoints(studentArray[i].points));
     }
 }
 
-int main()
+int main(void)
 {
-    char fileName[MAX_STR_LEN];
-    printf("Molim upisati naziv datoteke: ");
-    scanf(" %s", fileName);
+    char filename[MAX_STR_LEN];
+    printf("Please type in the filename: ");
+    scanf(" %s", filename);
 
     // brojanje zapisa
-    int n = numOfStudents(fileName);
-    if (n == FAILED_TO_OPEN) {
+    int n = numOfStudents(filename);
+    if (n == FAILED_TO_OPEN)
+    {
         return EXIT_FAILURE;
     }
 
-    // alociranje prostora
-    Student* studentArray = (Student*)malloc(n * sizeof(Student));
-
     // ucitavanje zapisa
-    studentArray = loadStudents(fileName, n, studentArray);
+    Student* studentArray = NULL;
+    studentArray = loadStudents(filename, n);
 
-    if (studentArray == NULL) {
+    if (studentArray == NULL)
+    {
         return EXIT_FAILURE;
     }
 
