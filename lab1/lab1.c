@@ -5,35 +5,65 @@
 #include <string.h>
 
 #define MAX_BR_BODOVA 30
+#define MAX_STR_LEN 128
+#define FAILED_TO_OPEN (-1)
+
 
 typedef struct
 {
-    char ime[20];
-    char prezime[20];
+    char ime[MAX_STR_LEN];
+    char prezime[MAX_STR_LEN];
     float bodovi;
 } Student;
 
-int brZapisa(FILE* f)
+int numOfStudents(char fileName[MAX_STR_LEN])
 {
-    int n = 1;
+    // otvaranje datoteke
+    FILE* f = NULL;
+    f = fopen(fileName, "r");
+    if (!f)
+    {
+        printf("Datoteku nije moguce otvoriti\n");
+        return FAILED_TO_OPEN;
+    }
+
+    // brojanje
+    int n = 0;
+    char buffer[1024];
     while (!feof(f))
     {
-        if (fgetc(f) == '\n')
-        {
+        fgets(buffer, 1024, f);
+        if (strcmp(buffer, "\n") != 0) {
             n++;
         }
     }
+
+    // zatvaranje datoteke
+    fclose(f);
+
     return n;
 }
 
-Student* ucitajZapise(FILE* f, int n, Student* nizStudenata)
+Student* loadStudents(char fileName[MAX_STR_LEN], int n, Student* studentArray)
 {
-    fseek(f, 0, SEEK_SET); //vracamo pokazivac na pocetak datoteke
+    // otvaranje datoteke
+    FILE* f = NULL;
+    f = fopen(fileName, "r");
+    if (!f)
+    {
+        printf("Datoteku nije moguce otvoriti\n");
+        return NULL;
+    }
+
     for (size_t i = 0; i < n; i++)
     {
-        fscanf(f, "%s %s %f", nizStudenata[i].ime, nizStudenata[i].prezime, &nizStudenata[i].bodovi);
+        fscanf(f, "%s %s %f", studentArray[i].ime, studentArray[i].prezime, &studentArray[i].bodovi);
     }
-    return nizStudenata;
+
+    // zatvaranje datoteke
+    fclose(f);
+
+    return studentArray;
 }
 
 float relBodovi(float apsBodovi)
@@ -41,38 +71,41 @@ float relBodovi(float apsBodovi)
     return apsBodovi / MAX_BR_BODOVA * 100;
 }
 
-void ispisiZapise(int n, Student* nizStudenata)
+void printStudents(int n, Student* studentArray)
 {
     for (size_t i = 0; i < n; i++)
     {
-        printf("%s %s %.2f %.2f\n", nizStudenata[i].ime, nizStudenata[i].prezime, nizStudenata[i].bodovi, relBodovi(nizStudenata[i].bodovi));
+        printf("%s %s %.1f %.2f\n", studentArray[i].ime, studentArray[i].prezime, studentArray[i].bodovi, relBodovi(studentArray[i].bodovi));
     }
 }
 
 int main()
 {
-    // otvaranje datoteke
-    FILE* f = fopen("studenti.txt", "r");
-    if (!f)
-    {
-        printf("Datoteku nije moguce otvoriti\n");
-        exit(1);
-    }
+    char fileName[MAX_STR_LEN];
+    printf("Molim upisati naziv datoteke: ");
+    scanf(" %s", fileName);
 
     // brojanje zapisa
-    int n = brZapisa(f);
+    int n = numOfStudents(fileName);
+    if (n == FAILED_TO_OPEN) {
+        return EXIT_FAILURE;
+    }
 
     // alociranje prostora
-    Student* nizStudenata = (Student*)malloc(n * sizeof(Student));
+    Student* studentArray = (Student*)malloc(n * sizeof(Student));
 
     // ucitavanje zapisa
-    nizStudenata = ucitajZapise(f, n, nizStudenata);
+    studentArray = loadStudents(fileName, n, studentArray);
 
-    // zatvaranje datoteke
-    fclose(f);
+    if (studentArray == NULL) {
+        return EXIT_FAILURE;
+    }
 
     // ispis studenata
-    ispisiZapise(n, nizStudenata);
+    printStudents(n, studentArray);
 
-    return 0;
+    // oslobadjanje prostora
+    free(studentArray);
+
+    return EXIT_SUCCESS;
 }
