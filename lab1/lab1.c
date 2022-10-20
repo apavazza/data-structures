@@ -8,7 +8,7 @@
 #define MAX_STR_LEN 128
 #define FAILED_TO_OPEN (-1)
 
-typedef struct _student Student;
+struct _student Student;
 int numOfStudents(char filename[MAX_STR_LEN]);
 Student* loadStudents(char filename[MAX_STR_LEN], int n);
 float relPoints(float absPoints);
@@ -25,6 +25,9 @@ int numOfStudents(char filename[MAX_STR_LEN])
 {
     // otvaranje datoteke
     FILE* f = NULL;
+    int n = 0;
+    char buffer[1024] = { 0 };
+
     f = fopen(filename, "r");
     if (!f)
     {
@@ -33,8 +36,7 @@ int numOfStudents(char filename[MAX_STR_LEN])
     }
 
     // brojanje
-    int n = 0;
-    char buffer[1024];
+   
     while (!feof(f))
     {
         fgets(buffer, 1024, f);
@@ -53,6 +55,7 @@ Student* loadStudents(char filename[MAX_STR_LEN], int n)
 {
     // otvaranje datoteke
     FILE* f = NULL;
+    int i = 0;
     f = fopen(filename, "r");
     if (!f)
     {
@@ -63,7 +66,7 @@ Student* loadStudents(char filename[MAX_STR_LEN], int n)
     // alociranje prostora
     Student* studentArray = (Student*)malloc(n * sizeof(Student));
 
-    for (size_t i = 0; i < n; i++)
+    for (i; i < n; i++)
     {
         fscanf(f, "%s %s %f", studentArray[i].firstName, studentArray[i].lastName, &studentArray[i].points);
     }
@@ -81,7 +84,8 @@ float relPoints(float absPoints)
 
 void printStudents(int n, Student* studentArray)
 {
-    for (size_t i = 0; i < n; i++)
+    int i = 0;
+    for (i; i < n; i++)
     {
         printf("%s %s %.1f %.2f\n", studentArray[i].firstName, studentArray[i].lastName, studentArray[i].points, relPoints(studentArray[i].points));
     }
