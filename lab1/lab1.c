@@ -8,7 +8,7 @@
 #define MAX_STR_LEN 128
 #define FAILED_TO_OPEN (-1)
 
-struct _student Student;
+typedef struct _student Student;
 int numOfStudents(char filename[MAX_STR_LEN]);
 Student* loadStudents(char filename[MAX_STR_LEN], int n);
 float relPoints(float absPoints);
@@ -20,6 +20,38 @@ typedef struct _student
     char lastName[MAX_STR_LEN];
     float points;
 } Student;
+
+int main(void)
+{
+    char filename[MAX_STR_LEN];
+    int n = 0;
+    printf("Please type in the filename: ");
+    scanf(" %s", filename);
+
+    // brojanje zapisa
+    n = numOfStudents(filename);
+    if (n == FAILED_TO_OPEN)
+    {
+        return EXIT_FAILURE;
+    }
+
+    // ucitavanje zapisa
+    Student* studentArray = NULL;
+    studentArray = loadStudents(filename, n);
+
+    if (studentArray == NULL)
+    {
+        return EXIT_FAILURE;
+    }
+
+    // ispis studenata
+    printStudents(n, studentArray);
+
+    // oslobadjanje prostora
+    free(studentArray);
+
+    return EXIT_SUCCESS;
+}
 
 int numOfStudents(char filename[MAX_STR_LEN])
 {
@@ -36,7 +68,6 @@ int numOfStudents(char filename[MAX_STR_LEN])
     }
 
     // brojanje
-   
     while (!feof(f))
     {
         fgets(buffer, 1024, f);
@@ -89,35 +120,4 @@ void printStudents(int n, Student* studentArray)
     {
         printf("%s %s %.1f %.2f\n", studentArray[i].firstName, studentArray[i].lastName, studentArray[i].points, relPoints(studentArray[i].points));
     }
-}
-
-int main(void)
-{
-    char filename[MAX_STR_LEN];
-    printf("Please type in the filename: ");
-    scanf(" %s", filename);
-
-    // brojanje zapisa
-    int n = numOfStudents(filename);
-    if (n == FAILED_TO_OPEN)
-    {
-        return EXIT_FAILURE;
-    }
-
-    // ucitavanje zapisa
-    Student* studentArray = NULL;
-    studentArray = loadStudents(filename, n);
-
-    if (studentArray == NULL)
-    {
-        return EXIT_FAILURE;
-    }
-
-    // ispis studenata
-    printStudents(n, studentArray);
-
-    // oslobadjanje prostora
-    free(studentArray);
-
-    return EXIT_SUCCESS;
 }
