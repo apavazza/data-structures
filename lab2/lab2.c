@@ -17,7 +17,7 @@ void printHelp(void);
 void printList(Node* n);
 Node* find(char* x, Node* n);
 Node* findPrev(char* x, Node* n);
-bool delete(Node* n);
+bool delete(char* x, Node* n);
 void deleteAll(Node* n);
 
 typedef struct _node
@@ -31,6 +31,7 @@ typedef struct _node
 int main(void) {
 	char command[11] = { 0 };
 	Node* head = (Node*)malloc(sizeof(Node));
+	Node* temp = NULL;
 	head->next = NULL;
 
 	printf("Linked List Addresser\n\n");
@@ -60,7 +61,11 @@ int main(void) {
 		}
 		else if (strcmp(command, "find") == 0 || strcmp(command, "f") == 0)
 		{
-			if (!find(inputLastName(), head))
+			if (temp = find(inputLastName(), head))
+			{
+				printf("FOUND: %s %s %d\n", temp->firstName, temp->lastName, temp->yearOfBirth);
+			}
+			else
 			{
 				printf("The person could not be found\n");
 			}
@@ -139,7 +144,7 @@ bool addToEnd(Node* el, Node* n)
 	return true;
 }
 
-char* inputLastName()
+char* inputLastName(void)
 {
 	char lastName[MAX_STR_LEN] = { 0 };
 	printf("Last name: ");
@@ -177,8 +182,6 @@ Node* find(char* x, Node* n)
 		n = n->next;
 	}
 	if (n == NULL) return NULL;
-
-	printf("FOUND: %s %s %d", n->firstName, n->lastName, n->yearOfBirth);
 
 	return n;
 }
