@@ -12,12 +12,12 @@ typedef struct _node Node;
 Node* createElement(void);
 bool addToStart(Node* el, Node* n);
 bool addToEnd(Node* el, Node* n);
-char* inputLastName(void);
+const char* inputLastName(char* lastName);
 void printHelp(void);
 void printList(Node* n);
-Node* find(char* x, Node* n);
-Node* findPrev(char* x, Node* n);
-bool delete(char* x, Node* n);
+Node* find(const char* x, Node* n);
+Node* findPrev(const char* x, Node* n);
+bool delete(const char* x, Node* n);
 void deleteAll(Node* n);
 
 typedef struct _node
@@ -30,6 +30,7 @@ typedef struct _node
 
 int main(void) {
 	char command[11] = { 0 };
+	char temp_str[MAX_STR_LEN] = { 0 };
 	Node* head = (Node*)malloc(sizeof(Node));
 	Node* temp = NULL;
 	head->next = NULL;
@@ -61,20 +62,20 @@ int main(void) {
 		}
 		else if (strcmp(command, "find") == 0 || strcmp(command, "f") == 0)
 		{
-			if (temp = find(inputLastName(), head))
+			if (temp = find(inputLastName(temp_str), head))
 			{
 				printf("FOUND: %s %s %d\n", temp->firstName, temp->lastName, temp->yearOfBirth);
 			}
 			else
 			{
-				printf("The person could not be found\n");
+				printf("Person with the last name %s could not be found\n", temp_str);
 			}
 		}
 		else if (strcmp(command, "delete") == 0 || strcmp(command, "d") == 0)
 		{
-			if (!delete(inputLastName(), head))
+			if (!delete(inputLastName(temp_str), head))
 			{
-				printf("The person could not be found\n");
+				printf("Person with the last name %s could not be found\n", temp_str);
 			}
 		}
 		else if (strcmp(command, "help") == 0 || strcmp(command, "h") == 0)
@@ -144,12 +145,12 @@ bool addToEnd(Node* el, Node* n)
 	return true;
 }
 
-char* inputLastName(void)
+const char* inputLastName(char* lastName)
 {
-	char lastName[MAX_STR_LEN] = { 0 };
 	printf("Last name: ");
 	scanf(" %s", lastName);
-	return &lastName;
+
+	return lastName;
 }
 
 void printHelp(void)
@@ -174,7 +175,7 @@ void printList(Node* n)
 	}
 }
 
-Node* find(char* x, Node* n)
+Node* find(const char* x, Node* n)
 {
 	n = n->next; // preskacemo head
 	while (n != NULL && strcmp(n->lastName, x) != 0)
@@ -186,7 +187,7 @@ Node* find(char* x, Node* n)
 	return n;
 }
 
-Node* findPrev(char* x, Node* n)
+Node* findPrev(const char* x, Node* n)
 {
 	while (n->next != NULL && (strcmp(n->next->lastName, x) != 0))
 	{
@@ -196,7 +197,7 @@ Node* findPrev(char* x, Node* n)
 	return n;
 }
 
-bool delete(char* x, Node* n)
+bool delete(const char* x, Node* n)
 {
 	Node* prev = NULL;
 	prev = findPrev(x, n);

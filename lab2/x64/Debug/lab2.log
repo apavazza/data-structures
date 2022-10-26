@@ -1,4 +1,2 @@
 ﻿  lab2.c
-C:\Users\Amadeo\source\repos\strukture_podataka\lab2\lab2.c(152,18): warning C4047: 'return': 'char *' differs in levels of indirection from 'char (*)[128]'
-C:\Users\Amadeo\source\repos\strukture_podataka\lab2\lab2.c(152): warning C4172: returning address of local variable or temporary: lastName
   lab2.vcxproj -> C:\Users\Amadeo\source\repos\strukture_podataka\x64\Debug\lab2.exe
