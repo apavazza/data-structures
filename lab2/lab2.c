@@ -32,6 +32,11 @@ int main(void) {
 	char command[11] = { 0 };
 	char temp_str[MAX_STR_LEN] = { 0 };
 	Node* head = (Node*)malloc(sizeof(Node));
+	if (!head)
+	{
+		printf("Application could not be started\n");
+		return EXIT_FAILURE;
+	}
 	Node* temp = NULL;
 	head->next = NULL;
 
