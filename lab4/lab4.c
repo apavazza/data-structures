@@ -9,10 +9,11 @@
 
 struct _node;
 typedef struct _node Node;
-bool menu(Node* head1, Node* head2);
+bool menu(Node* head1, Node* head2, Node* head3);
 bool loadPolynomials(const char* filename, Node* h1, Node* h2);
 bool split(char* pol, Node* n);
 Node* createElement(int coefficient, int exponent);
+bool add(Node* h1, Node* h2, Node* h3);
 bool insertSorted(Node* el, Node* n);
 void printPolynomial(Node* n);
 void deleteAll(Node* n);
@@ -29,31 +30,29 @@ typedef struct _node
 int main(void) {
 	Node* head1 = (Node*)malloc(sizeof(Node));
 	Node* head2 = (Node*)malloc(sizeof(Node));
-	if (!head1 || !head2)
+	Node* head3 = (Node*)malloc(sizeof(Node));
+	bool menu_ret = false;
+	if (!head1 || !head2 || !head3)
 	{
 		printf("Application could not be started\n");
 		return EXIT_FAILURE;
 	}
 	head1->next = NULL;
 	head2->next = NULL;
+	head3->next = NULL;
 
-	if (menu(head1, head2))
-	{
-		// oslobadjanje prostora
-		deleteAll(head1);
-		deleteAll(head2);
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		// oslobadjanje prostora
-		deleteAll(head1);
-		deleteAll(head2);
-		return EXIT_FAILURE;
-	}
+	menu_ret = menu(head1, head2, head3);
+	
+	// oslobadjanje prostora
+	deleteAll(head1);
+	deleteAll(head2);
+	deleteAll(head3);
+
+	if (menu_ret) return EXIT_SUCCESS;
+	return EXIT_FAILURE;
 }
 
-bool menu(Node* head1, Node* head2)
+bool menu(Node* head1, Node* head2, Node* head3)
 {
 	char filename[MAX_STR_LEN] = { 0 };
 	char command[MAX_STR_LEN] = { 0 };
@@ -67,15 +66,14 @@ bool menu(Node* head1, Node* head2)
 			printf("File name: ");
 			scanf(" %s", filename);
 
-			if (!loadPolynomials(filename, head1, head2))
+			if (!loadPolynomials(filename, head1, head2, head3))
 			{
-				printf("Polynomials could not be loaded\n");
-				return false;
+				printf("Polynomials could not be loaded! Please try again\n");
 			}
 		}
 		else if (strcmp(command, "add") == 0 || strcmp(command, "a") == 0)
 		{
-			printf("Not yet implemented!\n");
+			add(head1, head2, head3);
 		}
 		else if (strcmp(command, "multiply") == 0 || strcmp(command, "m") == 0)
 		{
@@ -85,6 +83,7 @@ bool menu(Node* head1, Node* head2)
 		{
 			printPolynomial(head1);
 			printPolynomial(head2);
+			printPolynomial(head3);
 		}
 		else if (strcmp(command, "help") == 0 || strcmp(command, "h") == 0)
 		{
@@ -102,7 +101,7 @@ bool menu(Node* head1, Node* head2)
 	}
 }
 
-bool loadPolynomials(const char* filename, Node* h1, Node* h2)
+bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 {
 	char polynomial1[MAX_STR_LEN] = { 0 };
 	char polynomial2[MAX_STR_LEN] = { 0 };
@@ -112,8 +111,10 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2)
 
 	deleteAll(h1->next); // brisemo stare polinome ako postoje
 	deleteAll(h2->next);
+	deleteAll(h3->next);
 	h1->next = NULL;
 	h2->next = NULL;
+	h3->next = NULL;
 
 	fgets(polynomial1, 100, f);
 	fgets(polynomial2, 100, f);
@@ -180,12 +181,59 @@ bool insertSorted(Node* el, Node* n)
 void printPolynomial(Node* n)
 {
 	n = n->next; // head preskacemo
+	if (n == NULL)
+	{
+		printf("EMPTY\n");
+		return;
+	}
+
 	while (n)
 	{
-		printf("%dx^%d+", n->coefficient, n->exponent);
+		printf("%dx^%d", n->coefficient, n->exponent);
+		if (n->next) printf("+");
 		n = n->next;
 	}
 	printf("\n");
+}
+
+bool add(Node* h1, Node* h2, Node* h3)
+{
+	Node* temp = NULL;
+	if (!h1->next || !h2->next)
+	{
+		printf("You first need to load the polynomilas\n"
+			"Type help for more information\n");
+	}
+
+	deleteAll(h3->next); // brisemo stari rezultanti polinom ako postoji
+	h3->next = NULL;
+
+	while (h1 != NULL && h2 != NULL)
+	{
+		if (h1->exponent == h2->exponent)
+		{
+			insertSorted(createElement(h1->coefficient + h2->coefficient, h1->exponent), h3);
+			h1 = h1->next;
+			h2 = h2->next;
+		}
+		else if (h1->exponent > h2->exponent)
+		{
+			insertSorted(createElement(h1->coefficient, h1->exponent), h3);
+			h1 = h1->next;
+		}
+		else
+		{
+			insertSorted(createElement(h2->coefficient, h2->exponent), h3);
+		}
+	}
+	if (h1 != NULL) temp = h1;
+	else temp = h2;
+	while (temp != NULL)
+	{
+		insertSorted(createElement(temp->coefficient, temp->exponent), h3);
+		temp = temp->next;
+	}
+	return true;
 }
 
 void deleteAll(Node* n)
