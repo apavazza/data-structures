@@ -6,16 +6,19 @@
 #include <stdbool.h>
 
 #define MAX_STR_LEN 128
+#define MAX_LINE 1024
 
 struct _node;
 typedef struct _node Node;
 bool menu(Node* head1, Node* head2, Node* head3);
-bool loadPolynomials(const char* filename, Node* h1, Node* h2);
+bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3);
 bool split(char* pol, Node* n);
+Node* find(int exponent, Node* n);
 Node* createElement(int coefficient, int exponent);
 bool add(Node* h1, Node* h2, Node* h3);
 bool insertSorted(Node* el, Node* n);
 void printPolynomial(Node* n);
+bool delete(Node* n);
 void deleteAll(Node* n);
 void printHelp(void);
 
@@ -116,8 +119,8 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 	h2->next = NULL;
 	h3->next = NULL;
 
-	fgets(polynomial1, 100, f);
-	fgets(polynomial2, 100, f);
+	fgets(polynomial1, MAX_LINE, f);
+	fgets(polynomial2, MAX_LINE, f);
 	
 	fclose(f);
 
@@ -127,20 +130,53 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 
 bool split(char* pol, Node* n)
 {
-	int i = 0;
-	char prev[MAX_STR_LEN] = { 0 };
-	char* token = strtok(pol, " ");
-	for (i; strcmp(token, "\n") != 0; i++)
+	int c = 0;
+	int e = 0;
+	int num = 0;
+	int numOfVars = 0;
+	Node* temp = NULL;
+	while (strlen(pol) > 0)
 	{
-		strcpy(prev, token);
-		token = strtok(NULL, " ");
-		if (i % 2 == 0) // ako je parno
+		numOfVars = sscanf(pol, " %d %d %n", &c, &e, &num);
+		pol += num;
+		if (numOfVars == 2)
 		{
-			insertSorted(createElement(atoi(prev), atoi(token)), n);
+			if (temp = find(e, n)) // eksponent je vec u listi
+			{
+				temp->coefficient += c;
+				if (temp->coefficient == 0)
+				{
+					delete(temp);
+				}
+			}
+			else
+			{
+				insertSorted(createElement(c, e), n);
+			}
+		}
+		else
+		{
+			printf("Wrong polynomial format\n");
+			return false;
 		}
 	}
-	if (i % 2 == 0) return true;
-	return false;
+	return true;
+}
+
+Node* find(int exponent, Node* n)
+{
+	while (n->next != NULL && (exponent >= n->exponent)) //popraviti
+	{
+		n = n->next;
+		
+		
+	}
+
+	if (exponent == n->exponent)
+	{
+		return n;
+	}
+	return NULL;
 }
 
 Node* createElement(int coefficient, int exponent)
@@ -159,7 +195,8 @@ bool insertSorted(Node* el, Node* n)
 {
 	if (!el) return false;
 
-	if (n->next == NULL) // lista je prazna
+	// lista je prazna
+	if (n->next == NULL)
 	{
 		el->next = NULL;
 		n->next = el;
@@ -167,8 +204,8 @@ bool insertSorted(Node* el, Node* n)
 	}
 
 	// lista nije prazna
-	while (n->next != NULL && (el->exponent < n->exponent))
-	{
+	while (n->next != NULL && (el->exponent <= n->exponent))
+	{	
 		n = n->next;
 	}
 
@@ -233,6 +270,28 @@ bool add(Node* h1, Node* h2, Node* h3)
 		insertSorted(createElement(temp->coefficient, temp->exponent), h3);
 		temp = temp->next;
 	}
+	return true;
+}
+
+Node* findPrev(Node* n)
+{
+	Node* prev = NULL;
+	while (prev->next != NULL && prev->next->exponent != n->exponent)
+	{
+		prev = prev->next;
+	}
+	if (prev->next == NULL) return NULL;
+	return prev;
+}
+
+bool delete(Node* n)
+{
+	Node* prev = NULL;
+	prev = findPrev(n);
+	if (prev == NULL) return false;
+
+	prev->next = prev->next->next;
+	free(n);
 	return true;
 }
 

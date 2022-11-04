@@ -1,4 +1,1 @@
-﻿  lab4.c
-C:\Users\Amadeo\source\repos\strukture_podataka\lab4\lab4.c(69,49): warning C4020: 'loadPolynomials': too many actual parameters
-C:\Users\Amadeo\source\repos\strukture_podataka\lab4\lab4.c(105,1): warning C4029: declared formal parameter list different from definition
-  lab4.vcxproj -> C:\Users\Amadeo\source\repos\strukture_podataka\x64\Debug\lab4.exe
+﻿  lab4.vcxproj -> C:\Users\student\Source\Repos\strukture_podataka_Pavazza_Zadric_11_4_22\x64\Debug\lab4.exe
