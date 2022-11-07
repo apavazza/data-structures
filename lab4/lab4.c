@@ -6,20 +6,22 @@
 #include <stdbool.h>
 
 #define MAX_STR_LEN 128
-#define MAX_LINE 1024
+#define MAX_LINE_LEN 1024
 
 struct _node;
 typedef struct _node Node;
 bool menu(Node* head1, Node* head2, Node* head3);
 bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3);
-bool split(char* pol, Node* n);
-Node* find(int exponent, Node* n);
+bool processPolynomial(char* pol, Node* n);
 Node* createElement(int coefficient, int exponent);
-bool add(Node* h1, Node* h2, Node* h3);
 bool insertSorted(Node* el, Node* n);
-void printPolynomial(Node* n);
-bool delete(Node* n);
+Node* add(Node* h1, Node* h2, Node* h3);
+Node* multiply(Node* h1, Node* h2, Node* h3);
+Node* find(int exponent, Node* n);
+Node* findPrev(Node* x, Node* n);
+bool delete(Node* x, Node* n);
 void deleteAll(Node* n);
+void printPolynomial(Node* n);
 void printHelp(void);
 
 typedef struct _node
@@ -59,6 +61,7 @@ bool menu(Node* head1, Node* head2, Node* head3)
 {
 	char filename[MAX_STR_LEN] = { 0 };
 	char command[MAX_STR_LEN] = { 0 };
+	printf("Polynomial calculator\n\n");
 	printHelp();
 	while (true)
 	{
@@ -84,8 +87,11 @@ bool menu(Node* head1, Node* head2, Node* head3)
 		}
 		else if (strcmp(command, "print") == 0 || strcmp(command, "p") == 0)
 		{
+			printf("P1 = ");
 			printPolynomial(head1);
+			printf("P2 = ");
 			printPolynomial(head2);
+			printf("P3 = ");
 			printPolynomial(head3);
 		}
 		else if (strcmp(command, "help") == 0 || strcmp(command, "h") == 0)
@@ -119,16 +125,16 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 	h2->next = NULL;
 	h3->next = NULL;
 
-	fgets(polynomial1, MAX_LINE, f);
-	fgets(polynomial2, MAX_LINE, f);
+	fgets(polynomial1, MAX_LINE_LEN, f);
+	fgets(polynomial2, MAX_LINE_LEN, f);
 	
 	fclose(f);
 
-	if (split(polynomial1, h1) && split(polynomial2, h2)) return true;
+	if (processPolynomial(polynomial1, h1) && processPolynomial(polynomial2, h2)) return true;
 	return false;
 }
 
-bool split(char* pol, Node* n)
+bool processPolynomial(char* pol, Node* n)
 {
 	int c = 0;
 	int e = 0;
@@ -141,17 +147,19 @@ bool split(char* pol, Node* n)
 		pol += num;
 		if (numOfVars == 2)
 		{
-			if (temp = find(e, n)) // eksponent je vec u listi
+			temp = find(e, n);
+			if (temp != NULL) // eksponent je vec u listi
 			{
 				temp->coefficient += c;
-				if (temp->coefficient == 0)
+				if (temp->coefficient == 0) // zbroj koeficijenata je 0 pa brisemo taj clan iz liste
 				{
-					delete(temp);
+					delete(temp, n);
 				}
 			}
-			else
+			else // eksponent nije jos u listi
 			{
-				insertSorted(createElement(c, e), n);
+				// ako je koeficijent 0 taj clan nije potrebno dodavati u listu
+				if(c != 0) insertSorted(createElement(c, e), n);
 			}
 		}
 		else
@@ -161,22 +169,6 @@ bool split(char* pol, Node* n)
 		}
 	}
 	return true;
-}
-
-Node* find(int exponent, Node* n)
-{
-	while (n->next != NULL && (exponent >= n->exponent)) //popraviti
-	{
-		n = n->next;
-		
-		
-	}
-
-	if (exponent == n->exponent)
-	{
-		return n;
-	}
-	return NULL;
 }
 
 Node* createElement(int coefficient, int exponent)
@@ -204,7 +196,7 @@ bool insertSorted(Node* el, Node* n)
 	}
 
 	// lista nije prazna
-	while (n->next != NULL && (el->exponent <= n->exponent))
+	while (n->next != NULL && (n->next->exponent <= el->exponent))
 	{	
 		n = n->next;
 	}
@@ -215,32 +207,9 @@ bool insertSorted(Node* el, Node* n)
 	return true;
 }
 
-void printPolynomial(Node* n)
-{
-	n = n->next; // head preskacemo
-	if (n == NULL)
-	{
-		printf("EMPTY\n");
-		return;
-	}
-
-	while (n)
-	{
-		printf("%dx^%d", n->coefficient, n->exponent);
-		if (n->next) printf("+");
-		n = n->next;
-	}
-	printf("\n");
-}
-
-bool add(Node* h1, Node* h2, Node* h3)
+Node* add(Node* h1, Node* h2, Node* h3)
 {
 	Node* temp = NULL;
-	if (!h1->next || !h2->next)
-	{
-		printf("You first need to load the polynomilas\n"
-			"Type help for more information\n");
-	}
 
 	deleteAll(h3->next); // brisemo stari rezultanti polinom ako postoji
 	h3->next = NULL;
@@ -270,28 +239,47 @@ bool add(Node* h1, Node* h2, Node* h3)
 		insertSorted(createElement(temp->coefficient, temp->exponent), h3);
 		temp = temp->next;
 	}
-	return true;
+	return h3;
 }
 
-Node* findPrev(Node* n)
+Node* multiply(Node* h1, Node* h2, Node* h3)
 {
-	Node* prev = NULL;
-	while (prev->next != NULL && prev->next->exponent != n->exponent)
+	return h3;
+}
+
+Node* findPrev(Node* x, Node* n)
+{
+	while (n->next != NULL && n->next->exponent != x->exponent)
 	{
-		prev = prev->next;
+		n = n->next;
 	}
-	if (prev->next == NULL) return NULL;
-	return prev;
+	if (n->next == NULL) return NULL;
+	return n;
 }
 
-bool delete(Node* n)
+Node* find(int exponent, Node* n)
+{
+	n = n->next; //head preskacemo
+
+	while (n != NULL && (exponent != n->exponent))
+	{
+		n = n->next;
+
+
+	}
+
+	if (n == NULL) return NULL;
+	return n;
+}
+
+bool delete(Node* x, Node* n)
 {
 	Node* prev = NULL;
-	prev = findPrev(n);
+	prev = findPrev(x, n);
 	if (prev == NULL) return false;
 
 	prev->next = prev->next->next;
-	free(n);
+	free(x);
 	return true;
 }
 
@@ -305,6 +293,25 @@ void deleteAll(Node* n)
 		free(temp);
 	}
 }
+
+void printPolynomial(Node* n)
+{
+	n = n->next; // head preskacemo
+	if (n == NULL)
+	{
+		printf("EMPTY\n");
+		return;
+	}
+
+	while (n)
+	{
+		printf("%dx^%d", n->coefficient, n->exponent);
+		if (n->next) printf("+");
+		n = n->next;
+	}
+	printf("\n");
+}
+
 
 void printHelp(void)
 {
