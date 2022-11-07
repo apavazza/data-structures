@@ -15,8 +15,8 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3);
 bool processPolynomial(char* pol, Node* n);
 Node* createElement(int coefficient, int exponent);
 bool insertSorted(Node* el, Node* n);
-Node* add(Node* h1, Node* h2, Node* h3);
-Node* multiply(Node* h1, Node* h2, Node* h3);
+bool add(Node* h1, Node* h2, Node* h3);
+bool multiply(Node* h1, Node* h2, Node* h3);
 Node* find(int exponent, Node* n);
 Node* findPrev(Node* x, Node* n);
 bool delete(Node* x, Node* n);
@@ -79,11 +79,27 @@ bool menu(Node* head1, Node* head2, Node* head3)
 		}
 		else if (strcmp(command, "add") == 0 || strcmp(command, "a") == 0)
 		{
-			add(head1, head2, head3);
+			if (add(head1, head2, head3))
+			{
+				printf("P3 = P1 + P2 = ");
+				printPolynomial(head3);
+			}
+			else
+			{
+				printf("An error occured\n");
+			}
 		}
 		else if (strcmp(command, "multiply") == 0 || strcmp(command, "m") == 0)
 		{
-			printf("Not yet implemented!\n");
+			if (multiply(head1, head2, head3))
+			{
+				printf("P3 = P1 * P2 = ");
+				printPolynomial(head3);
+			}
+			else
+			{
+				printf("An error occured\n");
+			}
 		}
 		else if (strcmp(command, "print") == 0 || strcmp(command, "p") == 0)
 		{
@@ -156,10 +172,9 @@ bool processPolynomial(char* pol, Node* n)
 					delete(temp, n);
 				}
 			}
-			else // eksponent nije jos u listi
+			else if (c != 0) // eksponent nije jos u listi; ako je koeficijent 0 taj clan nije potrebno dodavati
 			{
-				// ako je koeficijent 0 taj clan nije potrebno dodavati u listu
-				if(c != 0) insertSorted(createElement(c, e), n);
+				 insertSorted(createElement(c, e), n);
 			}
 		}
 		else
@@ -207,9 +222,12 @@ bool insertSorted(Node* el, Node* n)
 	return true;
 }
 
-Node* add(Node* h1, Node* h2, Node* h3)
+bool add(Node* h1, Node* h2, Node* h3)
 {
 	Node* temp = NULL;
+
+	h1 = h1->next; // preskacemo headove
+	h2 = h2->next;
 
 	deleteAll(h3->next); // brisemo stari rezultanti polinom ako postoji
 	h3->next = NULL;
@@ -222,7 +240,7 @@ Node* add(Node* h1, Node* h2, Node* h3)
 			h1 = h1->next;
 			h2 = h2->next;
 		}
-		else if (h1->exponent > h2->exponent)
+		else if (h1->exponent < h2->exponent)
 		{
 			insertSorted(createElement(h1->coefficient, h1->exponent), h3);
 			h1 = h1->next;
@@ -230,6 +248,7 @@ Node* add(Node* h1, Node* h2, Node* h3)
 		else
 		{
 			insertSorted(createElement(h2->coefficient, h2->exponent), h3);
+			h2 = h2->next;
 		}
 	}
 	if (h1 != NULL) temp = h1;
@@ -239,12 +258,13 @@ Node* add(Node* h1, Node* h2, Node* h3)
 		insertSorted(createElement(temp->coefficient, temp->exponent), h3);
 		temp = temp->next;
 	}
-	return h3;
+	return true;
 }
 
-Node* multiply(Node* h1, Node* h2, Node* h3)
+bool multiply(Node* h1, Node* h2, Node* h3)
 {
-	return h3;
+	printf("Not yet implemented!\n");
+	return false;
 }
 
 Node* findPrev(Node* x, Node* n)
@@ -264,8 +284,6 @@ Node* find(int exponent, Node* n)
 	while (n != NULL && (exponent != n->exponent))
 	{
 		n = n->next;
-
-
 	}
 
 	if (n == NULL) return NULL;
@@ -311,7 +329,6 @@ void printPolynomial(Node* n)
 	}
 	printf("\n");
 }
-
 
 void printHelp(void)
 {
