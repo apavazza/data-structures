@@ -1,3 +1,11 @@
+/**
+* Polynomial calculator.
+* Supports addition and multiplication.
+* 
+* @author Amadeo Pavazza
+* @author Petar Zadric
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -48,7 +56,7 @@ int main(void) {
 
 	menu_ret = menu(head1, head2, head3);
 	
-	// oslobadjanje prostora
+	// free memory
 	deleteAll(head1);
 	deleteAll(head2);
 	deleteAll(head3);
@@ -57,6 +65,13 @@ int main(void) {
 	return EXIT_FAILURE;
 }
 
+/**
+* Provides command line user interface.
+* @param head1	Head of the first list.
+* @param head2	Head of the second list.
+* @param head3	Head of the third list.
+* @return		True if completed successfully, otherwise false.
+*/
 bool menu(Node* head1, Node* head2, Node* head3)
 {
 	char filename[MAX_STR_LEN] = { 0 };
@@ -126,6 +141,14 @@ bool menu(Node* head1, Node* head2, Node* head3)
 	}
 }
 
+/**
+* Loads polynomials into memory.
+* @param filename	Name of the file from which to read the polynomials.
+* @param h1			Head of the first list.
+* @param h2			Head of the second list.
+* @param h3			Head of the third list.
+* @return			True if completed successfully, otherwise false.
+*/
 bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 {
 	char polynomial1[MAX_STR_LEN] = { 0 };
@@ -134,7 +157,7 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 	f = fopen(filename, "r");
 	if (!f) return false;
 
-	deleteAll(h1->next); // brisemo stare polinome ako postoje
+	deleteAll(h1->next); // delete old polynomials if they exist
 	deleteAll(h2->next);
 	deleteAll(h3->next);
 	h1->next = NULL;
@@ -150,6 +173,12 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 	return false;
 }
 
+/**
+* Parses polynomials from a string into nodes in a linked list.
+* @param pol	Polynomial as a string.
+* @param n		Head of a list in which to insert the polynomial.
+* @return		True if completed successfully, otherwise false.
+*/
 bool processPolynomial(char* pol, Node* n)
 {
 	int c = 0;
@@ -164,15 +193,15 @@ bool processPolynomial(char* pol, Node* n)
 		if (numOfVars == 2)
 		{
 			temp = find(e, n);
-			if (temp != NULL) // eksponent je vec u listi
+			if (temp != NULL) // exponent is already in the list
 			{
 				temp->coefficient += c;
-				if (temp->coefficient == 0) // zbroj koeficijenata je 0 pa brisemo taj clan iz liste
+				if (temp->coefficient == 0) // sum of coefficients is 0 so we need to delete this element
 				{
 					delete(temp, n);
 				}
 			}
-			else if (c != 0) // eksponent nije jos u listi; ako je koeficijent 0 taj clan nije potrebno dodavati
+			else if (c != 0) // exponent is not in the list; if coefficient is 0 we don't need to add this element
 			{
 				 insertSorted(createElement(c, e), n);
 			}
@@ -186,6 +215,12 @@ bool processPolynomial(char* pol, Node* n)
 	return true;
 }
 
+/**
+* Creates an element (Node).
+* @param coefficient	Coefficient of a node.
+* @param exponent		Exponent of a node.
+* @return new			The address of a newly created node.
+*/
 Node* createElement(int coefficient, int exponent)
 {
 	Node* new = (Node*)malloc(sizeof(Node));
@@ -198,11 +233,18 @@ Node* createElement(int coefficient, int exponent)
 	return new;
 }
 
+/**
+* Inserts an element into a list.
+* The elements are sorted by exponent from the lowest to the highest.
+* @param el		Address of the node which is to be inserted.
+* @param n		Head of a list in which to insert the element.
+* @return		True if completed successfully, otherwise false.
+*/
 bool insertSorted(Node* el, Node* n)
 {
 	if (!el) return false;
 
-	// lista je prazna
+	// list is empty
 	if (n->next == NULL)
 	{
 		el->next = NULL;
@@ -210,7 +252,7 @@ bool insertSorted(Node* el, Node* n)
 		return true;
 	}
 
-	// lista nije prazna
+	// list is not empty
 	while (n->next != NULL && (n->next->exponent <= el->exponent))
 	{	
 		n = n->next;
@@ -222,14 +264,21 @@ bool insertSorted(Node* el, Node* n)
 	return true;
 }
 
+/**
+* Adds two polynomials.
+* @param h1		Head of the first list, containing the first polynomial.
+* @param h2		Head of the second list, containing the second polynomial.
+* @param h3		Head of the third list, in which to save the result.
+* @return		True if completed successfully, otherwise false.
+*/
 bool add(Node* h1, Node* h2, Node* h3)
 {
 	Node* temp = NULL;
 
-	h1 = h1->next; // preskacemo headove
+	h1 = h1->next; // skip head nodes
 	h2 = h2->next;
 
-	deleteAll(h3->next); // brisemo stari rezultanti polinom ako postoji
+	deleteAll(h3->next); // delete the old result if it exists
 	h3->next = NULL;
 
 	while (h1 != NULL && h2 != NULL)
@@ -261,12 +310,25 @@ bool add(Node* h1, Node* h2, Node* h3)
 	return true;
 }
 
+/**
+* Multiplies two polynomials.
+* @param h1		Head of the first list, containing the first polynomial.
+* @param h2		Head of the second list, containing the second polynomial.
+* @param h3		Head of the third list, in which to save the result.
+* @return		True if completed successfully, otherwise false.
+*/
 bool multiply(Node* h1, Node* h2, Node* h3)
 {
 	printf("Not yet implemented!\n");
 	return false;
 }
 
+/**
+* Searches for the previous node of a given node.
+* @param x	Node of which we need the previous node.
+* @param n	Head of a list.
+* @return	If found returns previous node of node x, otherwise NULL.
+*/
 Node* findPrev(Node* x, Node* n)
 {
 	while (n->next != NULL && n->next->exponent != x->exponent)
@@ -277,9 +339,15 @@ Node* findPrev(Node* x, Node* n)
 	return n;
 }
 
+/**
+* Searches for a node with the given exponent.
+* @param exponent	Exponent for which to search.
+* @param n			Head of a list.
+* @return			If found returns node's address, otherwise NULL.
+*/
 Node* find(int exponent, Node* n)
 {
-	n = n->next; //head preskacemo
+	n = n->next; // skip head node
 
 	while (n != NULL && (exponent != n->exponent))
 	{
@@ -290,6 +358,12 @@ Node* find(int exponent, Node* n)
 	return n;
 }
 
+/**
+* Deletes a node from a list.
+* @param x	Node which is to be deleted.
+* @param n	Head of a list from which to delete.
+* @return	True if completed successfully, otherwise false.
+*/
 bool delete(Node* x, Node* n)
 {
 	Node* prev = NULL;
@@ -301,6 +375,10 @@ bool delete(Node* x, Node* n)
 	return true;
 }
 
+/**
+* Deletes all nodes from a list.
+* @param	Head of a list.
+*/
 void deleteAll(Node* n)
 {
 	Node* temp = NULL;
@@ -312,9 +390,13 @@ void deleteAll(Node* n)
 	}
 }
 
+/**
+* Prints a polynomial on standard output.
+* @param n	Head of a list.
+*/
 void printPolynomial(Node* n)
 {
-	n = n->next; // head preskacemo
+	n = n->next; // skip head node
 	if (n == NULL)
 	{
 		printf("EMPTY\n");
@@ -330,6 +412,9 @@ void printPolynomial(Node* n)
 	printf("\n");
 }
 
+/**
+* Prints the help message.
+*/
 void printHelp(void)
 {
 	printf("Usage:\n\n"
