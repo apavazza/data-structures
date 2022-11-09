@@ -70,7 +70,7 @@ int main(void) {
 * @param head1	Head of the first list.
 * @param head2	Head of the second list.
 * @param head3	Head of the third list.
-* @return		True if completed successfully, otherwise false.
+* @return		Returns true if completed successfully, otherwise false.
 */
 bool menu(Node* head1, Node* head2, Node* head3)
 {
@@ -147,7 +147,7 @@ bool menu(Node* head1, Node* head2, Node* head3)
 * @param h1			Head of the first list.
 * @param h2			Head of the second list.
 * @param h3			Head of the third list.
-* @return			True if completed successfully, otherwise false.
+* @return			Returns true if completed successfully, otherwise false.
 */
 bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 {
@@ -177,7 +177,7 @@ bool loadPolynomials(const char* filename, Node* h1, Node* h2, Node* h3)
 * Parses polynomials from a string into nodes in a linked list.
 * @param pol	Polynomial as a string.
 * @param n		Head of a list in which to insert the polynomial.
-* @return		True if completed successfully, otherwise false.
+* @return		Returns true if completed successfully, otherwise false.
 */
 bool processPolynomial(char* pol, Node* n)
 {
@@ -238,7 +238,7 @@ Node* createElement(int coefficient, int exponent)
 * The elements are sorted by exponent from the lowest to the highest.
 * @param el		Address of the node which is to be inserted.
 * @param n		Head of a list in which to insert the element.
-* @return		True if completed successfully, otherwise false.
+* @return		Returns true if completed successfully, otherwise false.
 */
 bool insertSorted(Node* el, Node* n)
 {
@@ -269,7 +269,7 @@ bool insertSorted(Node* el, Node* n)
 * @param h1		Head of the first list, containing the first polynomial.
 * @param h2		Head of the second list, containing the second polynomial.
 * @param h3		Head of the third list, in which to save the result.
-* @return		True if completed successfully, otherwise false.
+* @return		Returns true if completed successfully.
 */
 bool add(Node* h1, Node* h2, Node* h3)
 {
@@ -315,12 +315,29 @@ bool add(Node* h1, Node* h2, Node* h3)
 * @param h1		Head of the first list, containing the first polynomial.
 * @param h2		Head of the second list, containing the second polynomial.
 * @param h3		Head of the third list, in which to save the result.
-* @return		True if completed successfully, otherwise false.
+* @return		Returns true if completed successfully.
 */
 bool multiply(Node* h1, Node* h2, Node* h3)
 {
-	printf("Not yet implemented!\n");
-	return false;
+	Node* h2_orig = h2;
+	Node* temp = NULL;
+	while (h1 = h1->next)
+	{
+		while (h2 = h2->next)
+		{
+			temp = find(h1->exponent + h2->exponent, h3);
+			if (temp) // the exponent is already in the list
+			{
+				temp->coefficient += h1->coefficient * h2->coefficient;
+			}
+			else // the exponent is not in the list
+			{
+				insertSorted(createElement(h1->coefficient * h2->coefficient, h1->exponent + h2->exponent), h3);
+			}
+		}
+		h2 = h2_orig;
+	}
+	return true;
 }
 
 /**
@@ -362,7 +379,7 @@ Node* find(int exponent, Node* n)
 * Deletes a node from a list.
 * @param x	Node which is to be deleted.
 * @param n	Head of a list from which to delete.
-* @return	True if completed successfully, otherwise false.
+* @return	Returns true if completed successfully, otherwise false.
 */
 bool delete(Node* x, Node* n)
 {
