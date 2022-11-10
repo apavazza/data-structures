@@ -81,11 +81,11 @@ bool menu(Node* head1, Node* head2, Node* head3)
 	while (true)
 	{
 		printf(" > ");
-		scanf(" %s", command);
+		scanf_s("%s", &command, MAX_STR_LEN);
 		if (strcmp(command, "load") == 0 || strcmp(command, "l") == 0)
 		{
 			printf("File name: ");
-			scanf(" %s", filename);
+			scanf_s(" %s", &filename, MAX_STR_LEN);
 
 			if (!loadPolynomials(filename, head1, head2, head3))
 			{
