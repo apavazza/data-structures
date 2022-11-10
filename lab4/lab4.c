@@ -321,6 +321,10 @@ bool multiply(Node* h1, Node* h2, Node* h3)
 {
 	Node* h2_orig = h2;
 	Node* temp = NULL;
+
+	deleteAll(h3->next); // delete the old result if it exists
+	h3->next = NULL;
+
 	while (h1 = h1->next)
 	{
 		while (h2 = h2->next)
