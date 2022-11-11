@@ -1,5 +1,5 @@
 /**
-* Calculator
+* Postfix Expression Calculator
 *
 * @author Amadeo Pavazza
 * @author Petar Zadric
@@ -17,9 +17,12 @@
 
 struct _node;
 typedef struct _node Node;
-bool loadExpression(Node* head);
-Node* createElement(int num);
-bool push(Node* el, Node* n);
+bool loadFromFile(char* buffer);
+bool processExpression(char* expression, int* result, Node* head);
+bool calculate(char operator, Node* head);
+bool push(int num, Node* head);
+bool pop(int* num, Node* head);
+void deleteAll(Node* n);
 
 typedef struct _node
 {
@@ -29,104 +32,207 @@ typedef struct _node
 
 int main(void)
 {
+	char expression[MAX_LINE_LEN] = { 0 };
+	int result = 0;
 	Node* head = (Node*)malloc(sizeof(Node));
+	head->next = NULL;
+	bool prExp_ret = false;
 	if (!head)
 	{
 		printf("Application could not be started\n");
 		return EXIT_FAILURE;
 	}
-	return EXIT_SUCCESS;
+
+	printf("Postfix Expression Calculator\n\n");
+	while (!loadFromFile(expression));
+	prExp_ret = processExpression(expression, &result, head);
+	free(head);
+
+	if (prExp_ret)
+	{
+		// print the final result
+		printf("Result = %d", result);
+		return EXIT_SUCCESS;
+	}
+	return EXIT_FAILURE;
 }
 
-bool loadExpression(Node* head)
+/**
+* Loads an expression from a file.
+* @param buffer		Variable in which to save the loaded expression.
+* @return			Returns true if completed successfully, otherwise false.
+*/
+bool loadFromFile(char* buffer)
 {
 	char filename[MAX_STR_LEN] = { 0 };
-	char* buffer = malloc(MAX_LINE_LEN * sizeof(char));
-	int num = 0;
-	char operator;
-	int temp = 0;
-	int numOfBytes = 0;
 	FILE* f = NULL;
+
 	printf("Please type in the file name: ");
-	scanf(" %s", filename);
+	scanf_s(" %s", &filename, MAX_STR_LEN);
 	f = fopen(filename, "r");
 	if (!f)
 	{
-		printf("File %s could not be opened\n");
+		printf("ERROR: File %s could not be opened! Please try again\n", filename);
 		return false;
 	}
 
 	fgets(buffer, MAX_LINE_LEN, f);
 
-	while (strlen(buffer) > 0)
+	return true;
+}
+
+/**
+* Processes a mathematical expression.
+* @param expression	Expression which to process.
+* @param result		Variable in which to save the result.
+* @param head		Head of the list (stack) used for calculation.
+* @return			Returns true if completed successfully, otherwise false.
+*/
+bool processExpression(char* expression, int* result, Node* head)
+{
+	int num = 0;
+	char operator = 0;
+	int temp = 0;
+	int numOfBytes = 0;
+
+	while (strlen(expression) > 0)
 	{
-		temp = sscanf(buffer, " %d %n", &num, &numOfBytes);
+		temp = sscanf(expression, " %d %n", &num, &numOfBytes);
 		if (temp == 1)
 		{
-			push(createElement(num), head);
+			if (!push(num, head))
+			{
+				printf("ERROR: Out of memory\n");
+				return false;
+			}
 		}
 		else {
-			sscanf(buffer, " %c %n", operator, &numOfBytes);
-			calculate(operator, head);
+			sscanf(expression, " %c %n", &operator, &numOfBytes);
+			if (!calculate(operator, head)) return false;
 		}
-		buffer += numOfBytes;
+		expression += numOfBytes;
 	}
-	free(buffer);
+
+	// pop the final result
+	pop(result, head);
+
+	// check whether the stack is empty
+	if (head->next)
+	{
+		printf("ERROR: Invalid mathematical expression\n");
+		deleteAll(head->next);
+		return false;
+	}
+	
 	return true;
 }
 
-bool push(int num, Node* n)
-{
-	Node* new = (Node*)malloc(sizeof(Node));
-	if (new == NULL) return false;
-
-	new->next = n->next;
-	n->next = new;
-
-	return true;
-}
-
+/**
+* Calculates a chosen mathematical operation.
+* @param operator	Specifies which mathematical operation to execute.
+* @param head		Head of the list (stack) used for calculation.
+* @return			Returns true if completed successfully, otherwise false.
+*/
 bool calculate(char operator, Node* head)
 {
-	int* firstOperand = NULL;
-	int* secondOperand = NULL;
-	int* result = NULL;
+	int firstOperand = 0;
+	int secondOperand = 0;
+	int result = 0;
 
-	secondOperand = pop(head);
-	firstOperand = pop(head);
-
-	if (!firstOperand || !secondOperand)
+	if (!pop(&secondOperand, head) || !pop(&firstOperand, head))
 	{
-		printf("Invalid mathematical expression\n");
+		printf("ERROR: Invalid mathematical expression\n");
 		return false;
 	}
 
 	switch (operator)
 	{
 	case '+':
-		result = *firstOperand + *secondOperand;
+		result = firstOperand + secondOperand;
 		break;
 	case '-':
-		result = *firstOperand - *secondOperand;
+		result = firstOperand - secondOperand;
 		break;
 	case '*':
-		result = *firstOperand * *secondOperand;
+		result = firstOperand * secondOperand;
 		break;
 	case '/':
-		if (*secondOperand == 0) result = NULL;
-		else result = *firstOperand / *secondOperand;
+		if (secondOperand == 0)
+		{
+			printf("ERROR: Division by zero\n");
+			return false;
+		}
+		result = firstOperand / secondOperand;
 		break;
 	default:
-		printf("Invalid operator\n");
+		printf("ERROR:Invalid operator\n");
 		return false;
 	}
-	
-	if (result) push(*result, head);
+
+	// push the result onto the stack
+	if (push(result, head))
+	{
+		return true;
+	}
+	else
+	{
+		printf("ERROR: Out of memory\n");
+		return false;
+	}
+}
+
+/**
+* Pushes a number onto a stack.
+* @param num		Number to push onto a stack.
+* @param head		Head of the list (stack) on which to push.
+* @return			Returns true if completed successfully, otherwise false.
+*/
+bool push(int num, Node* head)
+{
+	Node* new = (Node*)malloc(sizeof(Node));
+	if (new == NULL) return false;
+
+	new->next = head->next;
+	head->next = new;
+	new->num = num;
+
 	return true;
 }
 
-int* pop(Node* head)
+/**
+* Pops a number from a stack.
+* @param num		Variable in which to save the popped number.
+* @param head		Head of the list (stack) from which to pop the number.
+* @return			Returns true if completed successfully, otherwise false.
+*/
+bool pop(int* num, Node* head)
 {
+	Node* popped = head->next;
 
-	
+	if (popped)
+	{
+		*num = popped->num;
+
+		// delete the popped node
+		head->next = head->next->next;
+		free(popped);
+
+		return true;
+	}
+	return false;
+}
+
+/**
+* Deletes all nodes from the node provided onward.
+* @param n			Node from which to start deleting.
+*/
+void deleteAll(Node* n)
+{
+	Node* temp = NULL;
+
+	while ((temp = n) != NULL)
+	{
+		n = n->next;
+		free(temp);
+	}
 }
