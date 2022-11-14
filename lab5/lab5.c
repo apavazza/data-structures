@@ -46,7 +46,7 @@ int main(void)
 	printf("Postfix Expression Calculator\n\n");
 	while (!loadFromFile(expression));
 	prExp_ret = processExpression(expression, &result, head);
-	free(head);
+	deleteAll(head);
 
 	if (prExp_ret)
 	{
@@ -120,7 +120,6 @@ bool processExpression(char* expression, int* result, Node* head)
 	if (head->next)
 	{
 		printf("ERROR: Invalid mathematical expression\n");
-		deleteAll(head->next);
 		return false;
 	}
 	
