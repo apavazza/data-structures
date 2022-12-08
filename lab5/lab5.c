@@ -34,14 +34,17 @@ int main(void)
 {
 	char expression[MAX_LINE_LEN] = { 0 };
 	int result = 0;
-	Node* head = (Node*)malloc(sizeof(Node));
-	head->next = NULL;
 	bool prExp_ret = false;
+	Node* head = NULL;
+	head = (Node*)malloc(sizeof(Node));
+	
 	if (!head)
 	{
 		printf("Application could not be started\n");
 		return EXIT_FAILURE;
 	}
+
+	head->next = NULL;
 
 	printf("Postfix Expression Calculator\n\n");
 	while (!loadFromFile(expression));
