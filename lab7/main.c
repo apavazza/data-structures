@@ -49,7 +49,7 @@ int main(void)
 /**
 * Provides command line user interface.
 * @param root	Address of the root directory.
-* @param head	Address of the stack head.
+* @param head	Address of the stack's head.
 * @return		Returns true if completed successfully, otherwise false.
 */
 bool menu(Directory* root, Stack* head)

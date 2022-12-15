@@ -55,8 +55,8 @@ Directory* pop(Stack* head)
 }
 
 /**
-* Deletes all Stacks from the Stack provided onward.
-* @param n			Stack from which to start deleting.
+* Deletes all nodes from the stack provided onward.
+* @param n		Stack from which to start deleting.
 */
 void deleteAllStack(Stack* n)
 {
